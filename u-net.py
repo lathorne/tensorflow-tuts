@@ -4,9 +4,8 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 import os
 
-# # Import Dataset
-# from tensorflow.examples.tutorials.mnist import input_data
-# mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
+#generate the test data at the beginning and leave it the same the whole: 60:40 or 80:20 training to test data
+#generate data here, use another file to do that, check Michael's data loader for this
 
 # Training Parameters
 learning_rate = 0.001
@@ -16,7 +15,9 @@ display_step = 100
 
 
 # Network Parameters - set all these parameters here
-NUM_INPUTS = 1440000
+#put width, height, channel parameters here and get the computer to automatically find the size for me
+
+NUM_INPUTS = 1440000 #downsize the images 64x64 and then change this number
 NUM_OUTPUTS = 2
 NUM_C1 = 64 
 NUM_C2 = 128
@@ -70,11 +71,12 @@ sess.run(init)
 _step = []
 _acc = []
 for step in range(num_steps):
-    batch_xs, batch_ys = next_batch(batch_size)
+    batch_xs, batch_ys = next_batch(batch_size) #grabs the training data and its truth value here
     sess.run( trainer, feed_dict={X: batch_xs, Y: batch_ys} )
 
     if(step % display_step == 0):
-      acc = sess.run(accuracy, feed_dict={X: mnist.test.images, Y:mnist.test.labels})
+      acc = sess.run(accuracy, feed_dict={X: mnist.test.images, Y:mnist.test.labels}) #grabs the test data and its truth value, not the same as the training data
+      #generate the test data at the beginning and leave it the same the whole: 60:40 or 80:20 training to test data
       _step.append(step)
       _acc.append(acc)
 
@@ -88,4 +90,11 @@ plt.title("Accuracy for Classification")
 plt.show()
 
 def next_batch(batch_size):
+	#generate the data up top
+
 	#generates a number of images equal to the batch size and returns them with their answer data
+
+	#use michaels code online to try and do this, need to generate truth data and test data and send it back to the training set
+
+	#two variables, x and y data: x would be the input and y would be the truth data
+
