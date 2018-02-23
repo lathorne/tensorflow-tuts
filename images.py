@@ -6,10 +6,15 @@ import scipy.misc
 
 
 def threshold(img):
-	mask =  np.logical_and((img[:,:,2] > 200), (img[:,:,1] < 40),  (img[:,:,0] <  40)) * 1
+	mask =  np.logical_and((img[:,:,0] > 200), (img[:,:,2] < 40),  (img[:,:,1] <  40)) * 1
 	return mask
 
-for i in range(1, 20):
+def fig2data (fig):
+    data = np.fromstring(fig.canvas.tostring_rgb(), dtype=np.uint8, sep='')
+    data = data.reshape(fig.canvas.get_width_height()[::-1] + (3,))
+    return data
+
+for i in range(1, 2):
 
 	fig, ax = plt.subplots()
 
@@ -30,27 +35,31 @@ for i in range(1, 20):
 
 
 	plt.axis('off')
+	fig.canvas.draw()
+	im = fig2data(fig)
 
-	#plt.show()
-	fig.savefig("input_images/input" + str(i) + ".jpg")
+	# to output to a file
+	# fig.savefig("input_images/large" + str(i) + ".jpg")
+	# scipy.misc.imsave("input_images/test" + str(i) + ".jpg", im)
+
 	plt.close(fig)
 
-	#create binary mask
-	im = cv2.imread("input_images/input" + str(i) + ".jpg", 1) 
+	# to read in from a file
+	# im = cv2.imread("input_images/test" + str(i) + ".jpg", 1) 
+	# print(im.shape)
+
+	#make everything smaller
+	im = im[::18,::18,:]	 #THIS IS THE INPUT (27, 36, 3)
+	# print(im.shape)
+	# scipy.misc.imsave("input_images/input" + str(i) + ".jpg", im)
+
 
 	im_mask = threshold(im)
-	#print(im_mask.shape)
+	# print(im_mask.shape)
 
-	a = np.stack(((mask, (1-mask))), asix = 2) #create a vector out of the two masks
+	output = np.stack(((im_mask, (1-im_mask))), axis = 2) #THIS IS THE RESULTING OUTPUT (27, 36, 2), hopefully they are stacking in the right order
+	# print(output.shape)
 
-	#look at shape here WxHx2
-	#this isn't set to a probability so how will this work??
-	#output_im = np.concatenate(im_mask, 1 - im_mask) # only length-1 arrays can be converted to python scalars
-
-
-	scipy.misc.imsave("output_images/output" + str(i) + ".jpg", im_mask)
-
-	#FIGURE OUT THE SECOND DIMENSION AND PROPERLY GENERATE ABOUT 1000 images
 
 
 
