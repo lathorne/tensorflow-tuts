@@ -4,7 +4,12 @@ import matplotlib.pyplot as plt
 
 ##### need to edit next_function and make sure the data is being loaded in correctly
 
-DATASET_SIZE = 5000
+DATASET_SIZE = 1000
+display_step = 100
+
+_x = np.zeros((DATASET_SIZE, 40, 40, 3))
+_y = np.zeros((DATASET_SIZE, 40, 40, 2))
+
 
 def threshold(img):
 	mask =  np.logical_and((img[:,:,0] > 200), (img[:,:,2] < 40),  (img[:,:,1] <  40)) * 1
@@ -17,7 +22,7 @@ def fig2data (fig):
 
 def load_data(ratio = 0.8):
 
-	for i in range(1, DATASET_SIZE):
+	for i in range(0, DATASET_SIZE - 1):
 
 		fig, ax = plt.subplots()
 
@@ -43,13 +48,20 @@ def load_data(ratio = 0.8):
 		plt.close(fig)
 
 		
-		im = im[::18,::18,:]	 #THIS IS THE INPUT (27, 36, 3)
+		im = im[::12,::16,:]	 #THIS IS THE INPUT (40, 40, 3)
 		im_mask = threshold(im)
-		output = np.stack(((im_mask, (1-im_mask))), axis = 2) #THIS IS THE RESULTING OUTPUT (27, 36, 2), hopefully they are stacking in the right order
+		output = np.stack(((im_mask, (1-im_mask))), axis = 2) #THIS IS THE RESULTING OUTPUT (40, 40, 2), hopefully they are stacking in the right order
 		
-		# not sure if I am doing this right, I think I have to create a float here
-		_x.append(im) #input array
-		_y.append(output) #output array
+		
+		_x[i,:,:,:] = im
+		_y[i,:,:,:] = output
+
+
+		if(i % display_step == 0):
+			print(i)
+
+		# _x.append(im) #input array
+		# _y.append(output) #output array
 
 	# Split data into test/training sets
 	index = int(ratio * len(_x)) # Split index
@@ -75,3 +87,8 @@ class DataLoader():
 		length = self.x_train.shape[0]
 		indices = np.random.randint(0, length, batch_size) # Grab batch_size values randomly
 		return [self.x_train[indices], self.y_train[indices]]
+
+if __name__ == "__main__":
+	data = DataLoader()
+	xs, ys = data.next_batch(10)
+	print(xs.shape, ys.shape, data.x_test.shape, data.y_test.shape)

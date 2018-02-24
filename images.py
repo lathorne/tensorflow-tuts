@@ -42,6 +42,8 @@ for i in range(1, 2):
 	# fig.savefig("input_images/large" + str(i) + ".jpg")
 	# scipy.misc.imsave("input_images/test" + str(i) + ".jpg", im)
 
+	# print(im.shape)
+
 	plt.close(fig)
 
 	# to read in from a file
@@ -49,7 +51,8 @@ for i in range(1, 2):
 	# print(im.shape)
 
 	#make everything smaller
-	im = im[::18,::18,:]	 #THIS IS THE INPUT (27, 36, 3)
+	im = im[::12,::16,:]	 #THIS IS THE INPUT (27, 36, 3)
+	print(im.shape)
 	# print(im.shape)
 	# scipy.misc.imsave("input_images/input" + str(i) + ".jpg", im)
 
@@ -58,7 +61,7 @@ for i in range(1, 2):
 	# print(im_mask.shape)
 
 	output = np.stack(((im_mask, (1-im_mask))), axis = 2) #THIS IS THE RESULTING OUTPUT (27, 36, 2), hopefully they are stacking in the right order
-	# print(output.shape)
+	print(output.shape)
 
 
 
