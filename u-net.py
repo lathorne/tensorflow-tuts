@@ -1,5 +1,6 @@
 import tensorflow as tf
 import matplotlib.pyplot as plt
+import matplotlib
 import os
 
 #input dataset
@@ -48,6 +49,7 @@ trainer = optimizer.minimize(loss)
 # Evaluate model - change for segmentation
 correct_pred = tf.equal(tf.argmax(prediction, 3), tf.argmax(Y, 3)) #index three of prediction and Y gets us the fourth channel to compare
 accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
+segmentation = tf.argmax(prediction, 3)
 
 # Initalize varibles, and run network
 init = tf.global_variables_initializer()
@@ -76,8 +78,8 @@ plt.ylabel("Accuracy")
 plt.title("Accuracy for Classification")
 plt.show()
 
-segmentation = sess.run(correct_pred, feed_dict={X: dataset.x_test, Y:dataset.y_test})
+segmentation = 1 - sess.run(segmentation, feed_dict={X: dataset.x_test, Y:dataset.y_test})
 index = 0;
-matplotlib.image.imsave('results/real-img.png', data.x_test[index], cmap='gray') 
-matplotlib.image.imsave('results/real-test.png', data.y_test[index][:,:,0], cmap='gray') 
-matplotlib.image.imsave('results/real-results.png', predict[index], cmap='gray') 
+matplotlib.image.imsave('results/real-img.png', dataset.x_test[index], cmap='gray') 
+matplotlib.image.imsave('results/real-test.png', dataset.y_test[index][:,:,0], cmap='gray') 
+matplotlib.image.imsave('results/real-results.png', segmentation[index], cmap='gray') 
