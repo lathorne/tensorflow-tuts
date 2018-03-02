@@ -1,10 +1,12 @@
 import numpy as np
 import random
 import matplotlib.pyplot as plt
+import scipy.misc
+import matplotlib
 
 ##### need to edit next_function and make sure the data is being loaded in correctly
 
-DATASET_SIZE = 1000
+DATASET_SIZE = 5
 display_step = 100
 
 _x = np.zeros((DATASET_SIZE, 40, 40, 3))
@@ -53,9 +55,14 @@ def load_data(ratio = 0.8):
 		output = np.stack(((im_mask, (1-im_mask))), axis = 2) #THIS IS THE RESULTING OUTPUT (40, 40, 2), hopefully they are stacking in the right order
 		
 		
+		#im and output work, but some happens after here to make the images all screwy -- why things happen to change here
 		_x[i,:,:,:] = im
 		_y[i,:,:,:] = output
 
+		print(np.array_equal(im, _x[i,:,:,:]))
+
+		matplotlib.image.imsave('results/input.png', im, cmap='gray') 
+		matplotlib.image.imsave('results/input_in_array.png', _x[i,:,:,:], cmap='gray') 
 
 		if(i % display_step == 0):
 			print(i)
@@ -69,6 +76,9 @@ def load_data(ratio = 0.8):
 	y_train = _y[0:index]
 	x_test = _x[index:,:]
 	y_test = _y[index:]	
+
+	matplotlib.image.imsave('results/real-img.png', _x[0], cmap='gray') 
+	matplotlib.image.imsave('results/real-test.png', _y[0][:,:,0], cmap='gray') 
 
 	# Print out data sizes for train/test batches
 	print("Data Split: ", ratio)

@@ -46,6 +46,28 @@ loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=logits, lab
 optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate)
 trainer = optimizer.minimize(loss)
 
+#accuracy -- figure out why this isnt working
+falsePositives = tf.greater(prediction, Y) #the outcome is 1, truth is 0, I think its because these are two dimensional
+falsePositives = tf.reduce_mean(falsePositives, 0)
+
+falseNegatives = tf.greater(Y, prediction) #the truth is 1, the outcome is zero
+falseNegatives = tf.reduce_mean(falseNegatives)
+
+equals = tf.equal(Y, prediction)
+not_equals = 1 - equals
+
+truePositives = tf.greater(Y, not_equals)
+truePositives = tf.reduce_mean(truePositives)
+
+trueNegatives = tf.greater(equals, Y)
+trueNegatives = tf.reduce_mean(trueNegatives)
+
+sensitivity = truePositives/(truePositives + falseNegatives) #hit rate
+specificity = trueNegatives/(trueNegatives + falsePositives) #how well our negatives are working
+
+print(sensitivity)
+print(specificity)
+
 # Evaluate model - change for segmentation
 correct_pred = tf.equal(tf.argmax(prediction, 3), tf.argmax(Y, 3)) #index three of prediction and Y gets us the fourth channel to compare
 accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))

@@ -54,10 +54,11 @@ for i in range(1, 2):
 	im = im[::12,::16,:]	 #THIS IS THE INPUT (27, 36, 3)
 	print(im.shape)
 	# print(im.shape)
-	# scipy.misc.imsave("input_images/input" + str(i) + ".jpg", im)
+	scipy.misc.imsave("input_images/input" + str(i) + ".jpg", im)
 
 
 	im_mask = threshold(im)
+	scipy.misc.imsave("input_images/mask" + str(i) + ".jpg", im_mask)
 	# print(im_mask.shape)
 
 	output = np.stack(((im_mask, (1-im_mask))), axis = 2) #THIS IS THE RESULTING OUTPUT (27, 36, 2), hopefully they are stacking in the right order
