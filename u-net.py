@@ -38,29 +38,34 @@ def network():
   prediction = tf.nn.softmax(logits)
   return logits, prediction
 
-#WE NEED TO FIND A BETTER EVALUATION
-
 # Define loss and optimizer
 logits, prediction = network()
 loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=Y)) #need Y and logits to be the same size
 optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate)
 trainer = optimizer.minimize(loss)
 
-#accuracy -- figure out why this isnt working
+#accuracy -- 1s for the values we are looking for, 0s for ones we are not -- do we really want a mean here or do we just want to add them
 falsePositives = tf.greater(prediction, Y) #the outcome is 1, truth is 0, I think its because these are two dimensional
-falsePositives = tf.reduce_mean(falsePositives, 0)
+falsePositives = tf.reduce_mean(tf.cast(falsePositives,"float"))
 
 falseNegatives = tf.greater(Y, prediction) #the truth is 1, the outcome is zero
-falseNegatives = tf.reduce_mean(falseNegatives)
+falseNegatives = tf.reduce_mean(tf.cast(falseNegatives,"float"))
 
 equals = tf.equal(Y, prediction)
-not_equals = 1 - equals
+not_equals = tf.bitwise.invert(tf.cast(equals,"uint32")) # issue here with 1 - equals
 
-truePositives = tf.greater(Y, not_equals)
-truePositives = tf.reduce_mean(truePositives)
+truePositives = tf.greater(Y, tf.cast(not_equals,"float"))
+truePositives = tf.reduce_mean(tf.cast(truePositives,"float"))
 
-trueNegatives = tf.greater(equals, Y)
-trueNegatives = tf.reduce_mean(trueNegatives)
+trueNegatives = tf.greater(tf.cast(equals, "float"), Y)
+trueNegatives = tf.reduce_mean(tf.cast(trueNegatives, "float"))
+
+print("falsePositives = ", falsePositives)
+print("falseNegatives = ", falseNegatives)
+print("truePositives = ", truePositives)
+print("trueNegatives = ", trueNegatives)
+
+'''NEED TO FIGURE OUT WHAT IS GOING ON HERE. ALSO HAVING ISSUES WITH THE IMAGE FILE IN THE DATA LOADER. '''
 
 sensitivity = truePositives/(truePositives + falseNegatives) #hit rate
 specificity = trueNegatives/(trueNegatives + falsePositives) #how well our negatives are working
