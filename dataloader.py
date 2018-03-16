@@ -6,12 +6,11 @@ import matplotlib
 
 ##### need to edit next_function and make sure the data is being loaded in correctly
 
-DATASET_SIZE = 5
+DATASET_SIZE = 5000
 display_step = 100
 
-_x = np.zeros((DATASET_SIZE, 40, 40, 3))
-_y = np.zeros((DATASET_SIZE, 40, 40, 2))
-
+_x = np.zeros((DATASET_SIZE, 80, 80, 3), dtype='uint8') 
+_y = np.zeros((DATASET_SIZE, 80, 80, 2), dtype='uint8')
 
 def threshold(img):
 	mask =  np.logical_and((img[:,:,0] > 200), (img[:,:,2] < 40),  (img[:,:,1] <  40)) * 1
@@ -29,43 +28,38 @@ def load_data(ratio = 0.8):
 		fig, ax = plt.subplots()
 
 		#plotting red circles
-		for x in range(random.randint(1,10)):
+		for x in range(random.randint(5,10)):
 			circle1 = plt.Circle((random.uniform(0,1), random.uniform(0,1)), random.uniform(0,0.2), color = 'red', clip_on = False)
 			ax.add_artist(circle1)
 
 		#plotting blue circles
-		for x in range(random.randint(1,10)):
+		for x in range(random.randint(5,10)):
 			circle2 = plt.Circle((random.uniform(0,1), random.uniform(0,1)), random.uniform(0,0.2), color = "blue", clip_on = False)
 			ax.add_artist(circle2)
 
 		#plotting green circles
-		for x in range(random.randint(1,10)):
+		for x in range(random.randint(5,10)):
 			circle3 = plt.Circle((random.uniform(0,1), random.uniform(0,1)), random.uniform(0,0.2), color = "green", clip_on = False)
 			ax.add_artist(circle3)
-
 
 		plt.axis('off')
 		fig.canvas.draw()
 		im = fig2data(fig)
 		plt.close(fig)
 
-		
-		im = im[::12,::16,:]	 #THIS IS THE INPUT (40, 40, 3)
+		im = im[::6,::8,:]	 #THIS IS THE INPUT (40, 40, 3) using 12 and 16, (80, 80, 3) using 6 and 8
 		im_mask = threshold(im)
-		output = np.stack(((im_mask, (1-im_mask))), axis = 2) #THIS IS THE RESULTING OUTPUT (40, 40, 2), hopefully they are stacking in the right order
-		
-		
+		output = np.stack((((1-im_mask), im_mask)), axis = 2) #THIS IS THE RESULTING OUTPUT (40, 40, 2), hopefully they are stacking in the right order		
+
 		#im and output work, but some happens after here to make the images all screwy -- why things happen to change here
 		_x[i,:,:,:] = im
 		_y[i,:,:,:] = output
 
-		print(np.array_equal(im, _x[i,:,:,:]))
+		# matplotlib.image.imsave('results/input.png', im, cmap='gray') 
+		# matplotlib.image.imsave('results/input_in_array.png', _x[i,:,:,:], cmap='gray') 
 
-		matplotlib.image.imsave('results/input.png', im, cmap='gray') 
-		matplotlib.image.imsave('results/input_in_array.png', _x[i,:,:,:], cmap='gray') 
-
-		if(i % display_step == 0):
-			print(i)
+		# if(i % display_step == 0):
+		# 	print(i)
 
 		# _x.append(im) #input array
 		# _y.append(output) #output array
@@ -77,8 +71,8 @@ def load_data(ratio = 0.8):
 	x_test = _x[index:,:]
 	y_test = _y[index:]	
 
-	matplotlib.image.imsave('results/real-img.png', _x[0], cmap='gray') 
-	matplotlib.image.imsave('results/real-test.png', _y[0][:,:,0], cmap='gray') 
+	# matplotlib.image.imsave('results/real-img.png', _x[0], cmap='gray') 
+	# matplotlib.image.imsave('results/real-test.png', _y[0][:,:,0], cmap='gray') 
 
 	# Print out data sizes for train/test batches
 	print("Data Split: ", ratio)

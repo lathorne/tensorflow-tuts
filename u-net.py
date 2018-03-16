@@ -8,15 +8,15 @@ from dataloader import DataLoader
 dataset = DataLoader()
 
 #Image input parameters, make these square
-IM_WIDTH = 40
-IM_HEIGHT = 40
+IM_WIDTH = 80 #must match image size in dataloader.py
+IM_HEIGHT = 80 #must match image size in dataloader.py
 IM_CHANNELS = 3
 
 # Training Parameters
-learning_rate = 0.001
+learning_rate = 0.0001
 num_steps = 1000
-batch_size = 128
-display_step = 100
+batch_size = 32
+display_step = 50
 
 NUM_INPUTS = IM_WIDTH * IM_HEIGHT * IM_CHANNELS #downsize the images 64x64 and then change this number
 NUM_OUTPUTS = 2 #number of output channels
@@ -30,11 +30,19 @@ isTraining = tf.placeholder(tf.bool)
 
 def network():
 
- 	#first two conv layers
+ 	#first two conv layers - add more layers here
   he_init = tf.contrib.layers.variance_scaling_initializer()
   conv1 = tf.layers.conv2d(X,      NUM_C1, [3, 3], padding="SAME", activation=tf.nn.relu, kernel_initializer=he_init, name='h1')
   conv2 = tf.layers.conv2d(conv1,  NUM_C2, [3, 3], padding="SAME", activation=tf.nn.relu, kernel_initializer=he_init, name='h2')
-  logits = tf.layers.conv2d(conv2, NUM_OUTPUTS, [3, 3], padding="SAME", activation=tf.nn.relu, kernel_initializer=he_init, name='out')
+  pool1 = tf.layers.max_pooling2d(inputs=conv2, pool_size=[2, 2], strides=2)
+
+  conv3 = tf.layers.conv2d(pool1, 64, [3, 3], padding="SAME", activation=tf.nn.relu, kernel_initializer=he_init, name='Conv3')
+  conv4 = tf.layers.conv2d(conv3, 64, [3, 3], padding="SAME", activation=tf.nn.relu, kernel_initializer=he_init, name='Conv4')
+  up1 = tf.layers.conv2d_transpose(conv4, 64, [3, 3], strides=2, padding="SAME", name='Up1')
+
+  conv5 = tf.layers.conv2d(up1,   NUM_C1, [3, 3], padding="SAME", activation=tf.nn.relu, kernel_initializer=he_init, name='Conv5')
+  conv6 = tf.layers.conv2d(conv5, NUM_C1, [3, 3], padding="SAME", activation=tf.nn.relu, kernel_initializer=he_init, name='Conv6')
+  logits = tf.layers.conv2d(conv6, NUM_OUTPUTS, [1, 1], padding="SAME", activation=tf.nn.relu, kernel_initializer=he_init, name='out')
   prediction = tf.nn.softmax(logits)
   return logits, prediction
 
@@ -44,36 +52,7 @@ loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=logits, lab
 optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate)
 trainer = optimizer.minimize(loss)
 
-#accuracy -- 1s for the values we are looking for, 0s for ones we are not -- do we really want a mean here or do we just want to add them
-falsePositives = tf.greater(prediction, Y) #the outcome is 1, truth is 0, I think its because these are two dimensional
-falsePositives = tf.reduce_mean(tf.cast(falsePositives,"float"))
-
-falseNegatives = tf.greater(Y, prediction) #the truth is 1, the outcome is zero
-falseNegatives = tf.reduce_mean(tf.cast(falseNegatives,"float"))
-
-equals = tf.equal(Y, prediction)
-not_equals = tf.bitwise.invert(tf.cast(equals,"uint32")) # issue here with 1 - equals
-
-truePositives = tf.greater(Y, tf.cast(not_equals,"float"))
-truePositives = tf.reduce_mean(tf.cast(truePositives,"float"))
-
-trueNegatives = tf.greater(tf.cast(equals, "float"), Y)
-trueNegatives = tf.reduce_mean(tf.cast(trueNegatives, "float"))
-
-print("falsePositives = ", falsePositives)
-print("falseNegatives = ", falseNegatives)
-print("truePositives = ", truePositives)
-print("trueNegatives = ", trueNegatives)
-
-'''NEED TO FIGURE OUT WHAT IS GOING ON HERE. ALSO HAVING ISSUES WITH THE IMAGE FILE IN THE DATA LOADER. '''
-
-sensitivity = truePositives/(truePositives + falseNegatives) #hit rate
-specificity = trueNegatives/(trueNegatives + falsePositives) #how well our negatives are working
-
-print(sensitivity)
-print(specificity)
-
-# Evaluate model - change for segmentation
+# Evaluate model - change for segmentation - need better accuracy measure
 correct_pred = tf.equal(tf.argmax(prediction, 3), tf.argmax(Y, 3)) #index three of prediction and Y gets us the fourth channel to compare
 accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
 segmentation = tf.argmax(prediction, 3)
@@ -107,6 +86,6 @@ plt.show()
 
 segmentation = 1 - sess.run(segmentation, feed_dict={X: dataset.x_test, Y:dataset.y_test})
 index = 0;
-matplotlib.image.imsave('results/real-img.png', dataset.x_test[index], cmap='gray') 
-matplotlib.image.imsave('results/real-test.png', dataset.y_test[index][:,:,0], cmap='gray') 
-matplotlib.image.imsave('results/real-results.png', segmentation[index], cmap='gray') 
+matplotlib.image.imsave('real-img.png', dataset.x_test[index], cmap='gray') 
+matplotlib.image.imsave('real-test.png', dataset.y_test[index][:,:,0], cmap='gray') 
+matplotlib.image.imsave('real-results.png', segmentation[index], cmap='gray') 
